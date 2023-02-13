@@ -320,13 +320,13 @@ Copied parts are
 #define eight_4_roundsA(A, B, C, D, E, F, G, H, MV1, MV2, MV3, MV4, MQ1, MQ2, MQ3, MQ4, offset) \
                     round_4(A, B, C, D, E, F, G, H, MV1, MQ1, $0x4e641cdf, offset); \
                     round_4(H, A, B, C, D, E, F, G, MV2, MQ2, $0x4e631cbf, offset + 16); \
-                    round_4(G, H, A, B, C, D, E, F, MV3, MQ3, $0x4e621c9f, offset + 32); \ 
+                    round_4(G, H, A, B, C, D, E, F, MV3, MQ3, $0x4e621c9f, offset + 32); \
                     round_4(F, G, H, A, B, C, D, E, MV4, MQ4, $0x4e611c7f, offset + 48)
 
 #define eight_4_roundsB(A, B, C, D, E, F, G, H, MV1, MV2, MV3, MV4, MQ1, MQ2, MQ3, MQ4, offset) \
                     round_4(A, B, C, D, E, F, G, H, MV1, MQ1, $0x4e601c5f, offset); \
                     round_4(H, A, B, C, D, E, F, G, MV2, MQ2, $0x4e671c3f, offset + 16); \
-                    round_4(G, H, A, B, C, D, E, F, MV3, MQ3, $0x4e661c1f, offset + 32); \ 
+                    round_4(G, H, A, B, C, D, E, F, MV3, MQ3, $0x4e661c1f, offset + 32); \
                     round_4(F, G, H, A, B, C, D, E, MV4, MQ4, $0x4e651cff, offset + 48)
 
 #define round_4_and_sched(A, B, C, D, E, F, G, H, bicword, offset) \
@@ -462,7 +462,7 @@ Copied parts are
 TEXT ·_hash(SB), 0, $1024-36
 	MOVD digests+0(FP), OUTPUT_PTR
 	MOVD p_base+8(FP), DATA_PTR
-	MOVWU count+32(FP), NUM_BLKS
+	MOVWU count+16(FP), NUM_BLKS
 
 	MOVBU ·hasShani(SB), check_shani
 	CBNZ  check_shani, shani
@@ -586,7 +586,7 @@ arm_x4_loop:
 	VREV32               V5.B16, V5.B16
 	VREV32               V6.B16, V6.B16
 	VREV32               V7.B16, V7.B16
-	
+
 	WORD $0xdaaa000
 	WORD $0xdaab000
 	WORD $0x4daaa000
@@ -611,7 +611,7 @@ arm_x1_loop:
 	BEQ	epilog
 
 	// Load one block
-	VLD1.P	64(DATA_PTR), [VR0.S4, VR1.S4, VR2.S4, VR3.S4]	
+	VLD1.P	64(DATA_PTR), [VR0.S4, VR1.S4, VR2.S4, VR3.S4]
 	MOVD	$_K256_1<>(SB), k256
 
 	// change endiannes
@@ -631,7 +631,7 @@ arm_x1_loop:
 	VADD	VR0.S4, KV0.S4, KV0.S4
 	FMOVQ	KQ0, (RSP)
 	four_rounds_sched(A_, B_, C_, D_, E_, F_, G_, H_, VR0, VR1, VR2, VR3)
-	
+
 	VADD	VR1.S4, KV1.S4, KV1.S4
 	FMOVQ	KQ1, (RSP)
 	four_rounds_sched(E_, F_, G_, H_, A_, B_, C_, D_, VR1, VR2, VR3, VR0)
@@ -648,7 +648,7 @@ arm_x1_loop:
 	VADD	VR0.S4, KV0.S4, KV0.S4
 	FMOVQ	KQ0, (RSP)
 	four_rounds_sched(A_, B_, C_, D_, E_, F_, G_, H_, VR0, VR1, VR2, VR3)
-	
+
 	VADD	VR1.S4, KV1.S4, KV1.S4
 	FMOVQ	KQ1, (RSP)
 	four_rounds_sched(E_, F_, G_, H_, A_, B_, C_, D_, VR1, VR2, VR3, VR0)
@@ -665,7 +665,7 @@ arm_x1_loop:
 	VADD	VR0.S4, KV0.S4, KV0.S4
 	FMOVQ	KQ0, (RSP)
 	four_rounds_sched(A_, B_, C_, D_, E_, F_, G_, H_, VR0, VR1, VR2, VR3)
-	
+
 	VADD	VR1.S4, KV1.S4, KV1.S4
 	FMOVQ	KQ1, (RSP)
 	four_rounds_sched(E_, F_, G_, H_, A_, B_, C_, D_, VR1, VR2, VR3, VR0)
@@ -683,7 +683,7 @@ arm_x1_loop:
 	VADD	VR0.S4, KV0.S4, KV0.S4
 	FMOVQ	KQ0, (RSP)
 	four_rounds(A_, B_, C_, D_, E_, F_, G_, H_, RSP, 0)
-	
+
 	VADD	VR1.S4, KV1.S4, KV1.S4
 	FMOVQ	KQ1, (RSP)
 	four_rounds(E_, F_, G_, H_, A_, B_, C_, D_, RSP, 0)
@@ -738,7 +738,7 @@ arm_x1_loop:
 	ADDW	T2, B_, B_
 	REV32	A_, A_
 	REV32	B_, B_
-	ADDW	T3, C_, C_	
+	ADDW	T3, C_, C_
 	ADDW	T4, D_, D_
 	STPW.P	(A_, B_), 8(OUTPUT_PTR)
 	LDPW	16(RSP), (T1, T2)
@@ -787,7 +787,7 @@ shani_loop:
 	VMOV	V1.B16, V3.B16
 	VMOV	V2.B16, V8.B16
 
-	// reverse endianness 
+	// reverse endianness
 	VREV32	V4.B16, V4.B16
 	VREV32	V5.B16, V5.B16
 	VREV32	V6.B16, V6.B16
@@ -865,7 +865,7 @@ shani_loop:
 	VADD	V31.S4, V7.S4, V9.S4
 	HASHUPDATE(V9.S4)
 
-	
+
 	// Add initial digest
 	VADD	V2.S4, V0.S4, V2.S4
 	VADD	V3.S4, V1.S4, V3.S4
@@ -882,7 +882,7 @@ shani_loop:
 	VMOV	V2.B16, V8.B16
 	VLD1.P	64(padding), [V24.S4, V25.S4, V26.S4, V27.S4]
 	VLD1	(padding), [V28.S4, V29.S4, V30.S4, V31.S4]
-	SUB	$192, padding, padding 
+	SUB	$192, padding, padding
 
 	HASHUPDATE(V16.S4)
 	HASHUPDATE(V17.S4)

@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2021 Prysmatic Labs
+# Copyright (c) 2021 Prysmatic Labs
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -27,27 +27,52 @@ import (
 	"fmt"
 )
 
-func _hash(digests *byte, p [][32]byte, count uint32)
+func _hash(digests *byte, p *byte, count uint32)
 
-func Hash(digests [][32]byte, chunks [][32]byte) error {
-	if len(chunks) == 0 {
+func HashBuf(digests ChunkContainer, chunks ChunkContainer) error {
+	if chunks.WordCount() == 0 {
 		return nil
 	}
-
-	if len(chunks)%2 == 1 {
+	if chunks.WordCount()%2 != 0 {
 		return fmt.Errorf("odd number of chunks")
 	}
-	if len(digests) < len(chunks)/2 {
-		return fmt.Errorf("not enough digest length, need at least %v, got %v", len(chunks)/2, len(digests))
+	if digests.WordCount() < chunks.WordCount()/2 {
+		return fmt.Errorf("not enough digest length, need at least %v, got %v", chunks.WordCount()/(2), digests.WordCount())
 	}
 	if supportedCPU {
-		_hash(&digests[0][0], chunks, uint32(len(chunks)/2))
+		_hash(digests.Ref(), chunks.Ref(), uint32(chunks.WordCount()/2))
 	} else {
-		sha256_1_generic(digests, chunks)
+		cast, ok := chunks.(HashBuffer)
+		if !ok {
+			return fmt.Errorf("chunks does not implement HashBuffer and no cpu features detected")
+		}
+		cast2, ok := digests.(HashBuffer)
+		if !ok {
+			return fmt.Errorf("chunks does not implement HashBuffer and no cpu features detected")
+		}
+		sha256_1_generic(cast2, cast)
 	}
 	return nil
 }
 
+func Hash(digests [][32]byte, chunks [][32]byte) error {
+	return HashBuf(hb32(digests), hb32(chunks))
+}
+
+func HashFlat(digests []byte, chunks []byte) error {
+	return HashBuf(hb(digests), hb(chunks))
+}
+
+func HashChunksBuf(digests ChunkContainer, chunks ChunkContainer) {
+	_hash(
+		digests.Ref(),
+		chunks.Ref(),
+		uint32(chunks.WordCount()/2),
+	)
+}
+func HashChunksFlat(digests []byte, chunks []byte) {
+	HashChunksBuf(hb(digests), hb(chunks))
+}
 func HashChunks(digests [][32]byte, chunks [][32]byte) {
-	_hash(&digests[0][0], chunks, uint32(len(chunks)/2))
+	HashChunksBuf(hb32(digests), hb32(chunks))
 }
