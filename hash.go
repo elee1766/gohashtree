@@ -30,17 +30,19 @@ import (
 func _hash(digests *byte, p *byte, count uint32)
 
 func HashBuf(digests ChunkContainer, chunks ChunkContainer) error {
-	if chunks.WordCount() == 0 {
+	chunkCount := chunks.WordCount()
+	digestsCount := digests.WordCount()
+	if chunkCount == 0 {
 		return nil
 	}
-	if chunks.WordCount()%2 != 0 {
+	if chunkCount%2 != 0 {
 		return fmt.Errorf("odd number of chunks")
 	}
-	if digests.WordCount() < chunks.WordCount()/2 {
+	if digestsCount < chunkCount/2 {
 		return fmt.Errorf("not enough digest length, need at least %v, got %v", chunks.WordCount()/(2), digests.WordCount())
 	}
 	if supportedCPU {
-		_hash(digests.Ref(), chunks.Ref(), uint32(chunks.WordCount()/2))
+		_hash(digests.Ref(), chunks.Ref(), uint32(chunkCount/2))
 	} else {
 		cast, ok := chunks.(HashBuffer)
 		if !ok {
@@ -56,11 +58,11 @@ func HashBuf(digests ChunkContainer, chunks ChunkContainer) error {
 }
 
 func Hash(digests [][32]byte, chunks [][32]byte) error {
-	return HashBuf(hb32(digests), hb32(chunks))
+	return HashBuf(ArraySlice(digests), ArraySlice(chunks))
 }
 
 func HashFlat(digests []byte, chunks []byte) error {
-	return HashBuf(hb(digests), hb(chunks))
+	return HashBuf(Bytes(digests), Bytes(chunks))
 }
 
 func HashChunksBuf(digests ChunkContainer, chunks ChunkContainer) {
@@ -71,8 +73,8 @@ func HashChunksBuf(digests ChunkContainer, chunks ChunkContainer) {
 	)
 }
 func HashChunksFlat(digests []byte, chunks []byte) {
-	HashChunksBuf(hb(digests), hb(chunks))
+	HashChunksBuf(Bytes(digests), Bytes(chunks))
 }
 func HashChunks(digests [][32]byte, chunks [][32]byte) {
-	HashChunksBuf(hb32(digests), hb32(chunks))
+	HashChunksBuf(ArraySlice(digests), ArraySlice(chunks))
 }

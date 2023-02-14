@@ -238,11 +238,11 @@ func BenchmarkHash_1_minio(b *testing.B) {
 }
 
 func BenchmarkHash_1(b *testing.B) {
-	chunks := make([]byte, 32*2)
-	digests := make([]byte, 32*1)
+	var chunks gohashtree.HashBuffer = make(gohashtree.Bytes, 32*2)
+	var digests gohashtree.HashBuffer = make(gohashtree.Bytes, 32*1)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		gohashtree.HashFlat(digests, chunks)
+		gohashtree.HashBuf(digests, chunks)
 	}
 }
 
@@ -257,11 +257,11 @@ func BenchmarkHash_4_minio(b *testing.B) {
 }
 
 func BenchmarkHash_4(b *testing.B) {
-	chunks := make([]byte, 32*8)
-	digests := make([]byte, 32*4)
+	var chunks gohashtree.HashBuffer = make(gohashtree.Bytes, 32*8)
+	var digests gohashtree.HashBuffer = make(gohashtree.Bytes, 32*4)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		gohashtree.HashFlat(digests, chunks)
+		gohashtree.HashBuf(digests, chunks)
 	}
 }
 

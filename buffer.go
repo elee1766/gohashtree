@@ -18,57 +18,53 @@ type HashBuffer interface {
 	GrabWord2(k, j int) uint32
 }
 
-type Bytes = hb
-type ArraySlice = hb32
-
 func ToBuf(v interface{}) HashBuffer {
 	switch k := v.(type) {
 	case HashBuffer:
 		return k
 	case []byte:
-		return (hb)(k)
+		return (Bytes)(k)
 	case [][32]byte:
-		return (hb32)(k)
+		return (ArraySlice)(k)
 	default:
+		panic("unsupported type for HashBuffer")
 	}
-	return nil
 }
 
-type hb []byte
+type Bytes []byte
 
-func (p hb) Ref() *byte {
+func (p Bytes) Ref() *byte {
 	return &p[0]
 }
-func (p hb) GrabWord1(k, j int) uint32 {
+func (p Bytes) WordCount() int {
+	return len(p) / 32
+}
+
+func (p Bytes) GrabWord1(k, j int) uint32 {
 	return uint32(p[2*k*32+j])<<24 | uint32(p[2*k*32+j+1])<<16 | uint32(p[2*k*32+j+2])<<8 | uint32(p[2*k*32+j+3])
 }
-func (p hb) GrabWord2(k, j int) uint32 {
+func (p Bytes) GrabWord2(k, j int) uint32 {
 	return uint32(p[(2*k+1)*32+j])<<24 | uint32(p[(2*k+1)*32+j+1])<<16 | uint32(p[(2*k+1)*32+j+2])<<8 | uint32(p[(2*k+1)*32+j+3])
 }
-func (p hb) ChunkRef(k int) []byte {
+func (p Bytes) ChunkRef(k int) []byte {
 	return p[k*32 : k*32+32]
 }
 
-func (p hb) WordCount() int {
-	return len(p) / (32)
-}
+type ArraySlice [][32]byte
 
-type hb32 [][32]byte
-
-func (p hb32) Ref() *byte {
+func (p ArraySlice) Ref() *byte {
 	return &p[0][0]
 }
+func (p ArraySlice) WordCount() int {
+	return len(p)
+}
 
-func (p hb32) GrabWord1(k, j int) uint32 {
+func (p ArraySlice) GrabWord1(k, j int) uint32 {
 	return uint32(p[2*k][j])<<24 | uint32(p[2*k][j+1])<<16 | uint32(p[2*k][j+2])<<8 | uint32(p[2*k][j+3])
 }
-func (p hb32) GrabWord2(k, j int) uint32 {
+func (p ArraySlice) GrabWord2(k, j int) uint32 {
 	return uint32(p[(2*k + 1)][j])<<24 | uint32(p[(2*k + 1)][j+1])<<16 | uint32(p[(2*k + 1)][j+2])<<8 | uint32(p[(2*k + 1)][j+3])
 }
-func (p hb32) ChunkRef(k int) []byte {
+func (p ArraySlice) ChunkRef(k int) []byte {
 	return p[k][:]
-}
-
-func (p hb32) WordCount() int {
-	return len(p)
 }
