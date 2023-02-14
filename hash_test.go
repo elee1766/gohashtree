@@ -328,16 +328,3 @@ func BenchmarkHashList(b *testing.B) {
 		gohashtree.HashFlat(digests, balances)
 	}
 }
-
-func BenchmarkHashList_WithAlloc(b *testing.B) {
-	balances := make([]byte, 32*400000)
-	for i := 0; i < len(balances)/32; i++ {
-		balances[i*32] = 'A'
-	}
-	chunks := convertRawChunks(balances)
-	digests := make([][32]byte, len(chunks)/2)
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		gohashtree.Hash(digests, chunks)
-	}
-}
